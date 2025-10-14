@@ -1,199 +1,25 @@
--- Muscle Legends Ultra Farm - Быстро и без лагов
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local TeleportService = game:GetService("TeleportService")
-local player = Players.LocalPlayer
+-- Simple Muscle Legends Auto Farm
+local player = game.Players.LocalPlayer
 
--- GUI
-local gui = Instance.new("ScreenGui")
-gui.Name = "UltraFarm"
-gui.Parent = player.PlayerGui
+print("💪 Muscle Legends Auto Farm Started!")
 
-local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 300, 0, 150)
-main.Position = UDim2.new(0, 10, 0, 10)
-main.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-main.Parent = gui
-
-local title = Instance.new("TextLabel")
-title.Text = "⚡ ULTRA DURABILITY FARM"
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundColor3 = Color3.fromRGB(0, 50, 100)
-title.TextColor3 = Color3.fromRGB(255, 255, 0)
-title.Parent = main
-
-local button = Instance.new("TextButton")
-button.Text = "🚀 START ULTRA FARM"
-button.Size = UDim2.new(0.9, 0, 0, 40)
-button.Position = UDim2.new(0.05, 0, 0, 35)
-button.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-button.TextColor3 = Color3.white
-button.Parent = main
-
-local status = Instance.new("TextLabel")
-status.Text = "Status: ❌ OFF"
-status.Size = UDim2.new(1, 0, 0, 25)
-status.Position = UDim2.new(0, 0, 0, 85)
-status.TextColor3 = Color3.white
-status.Parent = main
-
-local counter = Instance.new("TextLabel")
-counter.Text = "Items: 0"
-counter.Size = UDim2.new(1, 0, 0, 25)
-counter.Position = UDim2.new(0, 0, 0, 110)
-counter.TextColor3 = Color3.fromRGB(0, 255, 255)
-counter.Parent = main
-
--- Переменные
-local isFarming = false
-local itemsCollected = 0
-local connection
-
--- 🔥 ОПТИМИЗИРОВАННЫЙ СБОР БЕЗ ЛАГОВ
-local function ultraCollect()
-    if not isFarming then return end
-    
-    local character = player.Character
-    if not character then return end
-    
-    local root = character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    
-    -- Быстрый поиск ВСЕХ предметов
+while true do
+    -- Авто-сбор предметов
     for _, item in pairs(workspace:GetDescendants()) do
-        if not isFarming then break end
-        
-        -- Проверяем только важные свойства (меньше лагов)
-        if item:IsA("Part") and item.Parent then
-            local distance = (root.Position - item.Position).Magnitude
+        if item:IsA("Part") then
+            -- Собираем через ProximityPrompt
+            local prompt = item:FindFirstChildOfClass("ProximityPrompt")
+            if prompt then
+                fireproximityprompt(prompt)
+            end
             
-            -- Большой радиус сбора
-            if distance < 100 then
-                -- Мгновенный сбор через все возможные методы
-                local prompt = item:FindFirstChildOfClass("ProximityPrompt")
-                if prompt then
-                    for i = 1, 3 do  -- Многократный сбор
-                        fireproximityprompt(prompt)
-                    end
-                    itemsCollected = itemsCollected + 1
-                    counter.Text = "Items: " .. itemsCollected
-                end
-                
-                local clickDetector = item:FindFirstChildOfClass("ClickDetector")
-                if clickDetector then
-                    for i = 1, 3 do
-                        fireclickdetector(clickDetector)
-                    end
-                    itemsCollected = itemsCollected + 1
-                    counter.Text = "Items: " .. itemsCollected
-                end
-                
-                -- Автоперемещение предмета к игроку
-                if distance < 50 then
-                    item.CFrame = root.CFrame + Vector3.new(0, 5, 0)
-                end
+            -- Собираем через ClickDetector
+            local clickDetector = item:FindFirstChildOfClass("ClickDetector")
+            if clickDetector then
+                fireclickdetector(clickDetector)
             end
         end
     end
+    
+    wait(0.1)
 end
-
--- 🎯 АВТО-ТЕЛЕПОРТАЦИЯ ДЛЯ МАКСИМАЛЬНОЙ ЭФФЕКТИВНОСТИ
-local function teleportToHotspots()
-    if not isFarming then return end
-    
-    local character = player.Character
-    if not character then return end
-    
-    local root = character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    
-    -- Телепортация по точкам спавна предметов
-    local hotspots = {
-        Vector3.new(0, 10, 0),      -- Центр
-        Vector3.new(50, 10, 0),     -- Право
-        Vector3.new(-50, 10, 0),    -- Лево
-        Vector3.new(0, 10, 50),     -- Перед
-        Vector3.new(0, 10, -50),    -- Зад
-        Vector3.new(30, 10, 30),    -- Диагональ
-        Vector3.new(-30, 10, -30)   -- Диагональ
-    }
-    
-    for _, pos in pairs(hotspots) do
-        if not isFarming then break end
-        root.CFrame = CFrame.new(pos)
-        wait(0.5)  -- Ждем появления предметов
-        ultraCollect()  -- Собираем на этой точке
-    end
-end
-
--- ⚡ СУПЕР-БЫСТРЫЙ РЕЖИМ
-local function superFastMode()
-    if not isFarming then return end
-    
-    local character = player.Character
-    if not character then return end
-    
-    local humanoid = character:FindFirstChild("Humanoid")
-    if humanoid then
-        -- Увеличиваем скорость для быстрого перемещения
-        humanoid.WalkSpeed = 50
-    end
-    
-    -- Постоянный сбор + телепортация
-    while isFarming do
-        ultraCollect()
-        teleportToHotspots()
-        wait(0.1)  -- Минимальная задержка
-    end
-end
-
--- 🚀 ЗАПУСК СУПЕР-ФАРМА
-local function startUltraFarm()
-    isFarming = true
-    itemsCollected = 0
-    
-    button.Text = "🔴 STOP ULTRA FARM"
-    button.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-    status.Text = "Status: 🟢 ULTRA FARMING"
-    counter.Text = "Items: 0"
-    
-    -- Запускаем в отдельном потоке чтобы не лагало
-    connection = RunService.Heartbeat:Connect(function()
-        if isFarming then
-            pcall(superFastMode)
-        end
-    end)
-end
-
--- ⏹️ ОСТАНОВКА
-local function stopUltraFarm()
-    isFarming = false
-    
-    if connection then
-        connection:Disconnect()
-    end
-    
-    -- Возвращаем нормальную скорость
-    local character = player.Character
-    if character then
-        local humanoid = character:FindFirstChild("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = 16
-        end
-    end
-    
-    button.Text = "🚀 START ULTRA FARM"
-    button.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-    status.Text = "Status: ❌ OFF"
-end
-
--- Кнопка управления
-button.MouseButton1Click:Connect(function()
-    if isFarming then
-        stopUltraFarm()
-    else
-        startUltraFarm()
-    end
-end)
-
-print("⚡ Ultra Durability Farm loaded! Ready for fast farming!")
